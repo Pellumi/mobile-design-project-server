@@ -1,5 +1,5 @@
 import express from "express";
-import { database } from "../db/firebaseConfig";
+import { database } from "../db/firebaseConfig.js";
 import { ref, set, get } from "firebase/database";
 // import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 // import multer from "multer";
