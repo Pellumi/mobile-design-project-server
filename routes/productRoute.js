@@ -60,6 +60,37 @@ router.post("/create-category", async (req, res) => {
   }
 });
 
+router.get("/show-category", async (req, res) => {
+  try{
+    const categoryRef = dbRef(database, `categories`);
+    const snapshot = await get(categoryRef);
+
+    if (!snapshot.exists()) {
+      return res.status(404).json({ message: "No category found" });
+    }
+
+    const categories = snapshot.val();
+    const result = Object.entries(categories).map(([id, data]) => {
+      const { name, subcategories } = data;
+
+      const subcategoryList = subcategories
+        ? Object.entries(subcategories).map(([subId, subData]) => ({
+            id: subId,
+            name: subData.name,
+          }))
+        : [];
+
+      return { id, name, subcategories: subcategoryList };
+    });
+
+    res.status(200).json(result);
+  } catch (error){
+    res
+      .status(500)
+      .json({ message: "Error retrieving categories", error: error.message });
+  }
+})
+
 router.post("/create-product", upload.single("image"), async (req, res) => {
   const {
     name,
