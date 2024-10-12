@@ -39,7 +39,7 @@ router.post("/add-to-cart/:userId", async (req, res) => {
         totalPrice: totalPrice,
       });
 
-      res.status(201).json({ message: "Product quantity updated in cart" });
+      res.status(200).json({ message: "Product quantity updated in cart" });
     } else {
       await set(userCartRef, {
         productId,
@@ -57,6 +57,30 @@ router.post("/add-to-cart/:userId", async (req, res) => {
     });
   }
 });
+
+router.get("/show-cart/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  if (!userId ) {
+    return res
+      .status(400)
+      .json({ message: "UserId is required" });
+  }
+
+  try{
+    const userCartRef = ref(database, `users/${userId}/cart`);
+    const cartSnapshot = await get(userCartRef);
+
+    if (!cartSnapshot.exists()) {
+      return res.status(404).json({ message: "No products found in cart" });
+    }
+
+    const userCart = cartSnapshot.val();
+    res.status(200).json(userCart)
+  } catch (error){
+    res.status(500).json({ message: "Error getting cart: ", error });
+  }
+})
 
 router.delete("/remove-from-cart/:userId/:productId", async (req, res) => {
   const { userId, productId } = req.params;
