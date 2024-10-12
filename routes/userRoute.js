@@ -10,6 +10,7 @@ const saltRounds = 10;
 const router = express.Router();
 
 // TODO: make sure to change id from 21/1510 to 21-1510 for submission
+// Scratch that
 router.post("/signup", async (req, res) => {
   const { userId, first_name, last_name, email, password } = req.body;
 
