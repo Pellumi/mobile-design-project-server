@@ -61,7 +61,7 @@ router.post("/create-category", async (req, res) => {
 });
 
 router.get("/show-category", async (req, res) => {
-  try{
+  try {
     const categoryRef = dbRef(database, `categories`);
     const snapshot = await get(categoryRef);
 
@@ -84,12 +84,12 @@ router.get("/show-category", async (req, res) => {
     });
 
     res.status(200).json(result);
-  } catch (error){
+  } catch (error) {
     res
       .status(500)
       .json({ message: "Error retrieving categories", error: error.message });
   }
-})
+});
 
 router.post("/create-product", upload.single("image"), async (req, res) => {
   const {
@@ -257,6 +257,86 @@ router.get("/get-product/:categoryId/:subcategoryId", async (req, res) => {
     res
       .status(500)
       .json({ message: "Error retrieving products", error: error.message });
+  }
+});
+
+router.post("/add-product-review/:productId", async (req, res) => {
+  const { productId } = req.params;
+  const { userId, rating, reviewTopic, reviewBody } = req.body;
+
+  if (!productId || !userId || !rating || !reviewTopic || !reviewBody) {
+    return res.status(400).json({
+      message: "All fields are required",
+    });
+  }
+
+  if (rating > 5 || rating < 0) {
+    return res.status(400).json({
+      message: "Invalid rating",
+    });
+  }
+
+  try {
+    const userRef = dbRef(database, `users/${userId}`);
+    const userSnapshot = await get(userRef);
+
+    if (!userSnapshot.exists()) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const productsRef = dbRef(database, `products/${productId}`);
+    const snapshot = await get(productsRef);
+
+    if (!snapshot.exists) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const productReviewRef = dbRef(database, `products/${productId}/reviews`);
+    const newReview = push(productReviewRef);
+
+    await set(newReview, {
+      userId,
+      rating,
+      reviewTopic,
+      reviewBody,
+      created_at: new Date().toISOString(),
+    });
+
+    res.status(201).json({
+      message: "Review created successfully!",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error creating review",
+      error: error.message,
+    });
+  }
+});
+
+router.get("/get-product-review/:productId", async (req, res) => {
+  const { productId } = req.params;
+
+  if (!productId) {
+    return res.status(400).json({
+      message: "No productId",
+    });
+  }
+
+  try {
+    const productReviewRef = dbRef(database, `products/${productId}/reviews`);
+    const reviewSnapshot = await get(productReviewRef);
+
+    if (!reviewSnapshot.exists()) {
+      return res.status(404).json({ message: "No reviews found" });
+    }
+
+    const productReviews = reviewSnapshot.val();
+    res.status(200).json(productReviews);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error retrieving review",
+      error: error.message,
+    });
   }
 });
 
