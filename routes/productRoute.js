@@ -222,6 +222,48 @@ router.get("/search", async (req, res) => {
   }
 });
 
+router.get("/search-by-name", async (req, res) => {
+  const { keyword } = req.query;
+
+  try {
+    if (!keyword) {
+      return res.status(400).json({ message: "Keyword is required" });
+    }
+
+    const productsRef = dbRef(database, `products`);
+    const snapshot = await get(productsRef);
+
+    if (!snapshot.exists()) {
+      return res.status(404).json({ message: "No product found" });
+    }
+
+    const products = snapshot.val();
+    const filteredProducts = Object.keys(products).reduce((result, key) => {
+      const product = products[key];
+
+      if (
+        product.name &&
+        product.name.toLowerCase().includes(keyword.toLowerCase())
+      ) {
+        result[key] = product;
+      }
+      return result;
+    }, {});
+
+    if (Object.keys(filteredProducts).length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No products match the search keyword" });
+    }
+
+    res.status(200).json(filteredProducts);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error retrieving product", error: error.message });
+  }
+});
+
 router.get("/get-product/:categoryId/:subcategoryId", async (req, res) => {
   const { categoryId, subcategoryId } = req.params;
 
