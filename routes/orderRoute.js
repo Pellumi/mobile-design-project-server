@@ -234,4 +234,26 @@ router.get("/get-order-details/:orderId/:userId", async (req, res) => {
   } catch (error) {}
 });
 
+router.post("/send-notification/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const userToken = await getUserToken(userId); // Function to retrieve the user's FCM token from your database
+    const message = {
+      notification: {
+        title: "Delivery Update",
+        body: "Your order is now at your doorstep!",
+      },
+      token: userToken,
+    };
+
+    await admin.messaging().send(message);
+
+    res.status(200).json({ message: "Message sent", message });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+});
+
 export default router;
