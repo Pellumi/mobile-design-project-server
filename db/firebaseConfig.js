@@ -1,9 +1,16 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
+import admin from "firebase-admin";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const firebaseCofig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -18,7 +25,15 @@ const firebaseCofig = {
 
 const app = initializeApp(firebaseCofig);
 
+const serviceAccountPath = path.join(__dirname, process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount), 
+  databaseURL: process.env.FIREBASE_DATABASE_URL,
+});
+
 const database = getDatabase(app);
 const storage = getStorage(app);
 
-export { app, database, storage };
+export { app, database, storage, admin };

@@ -1,6 +1,6 @@
 import express from "express";
 import { database } from "../db/firebaseConfig.js";
-import { ref, set, get } from "firebase/database";
+import { ref, set, get, update } from "firebase/database";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -9,7 +9,6 @@ const saltRounds = 10;
 
 const router = express.Router();
 
-// TODO: make sure to change id from 21/1510 to 21-1510 for submission
 router.post("/signup", async (req, res) => {
   const { userId, first_name, last_name, email, password } = req.body;
 
@@ -103,6 +102,40 @@ router.post("/login", async (req, res) => {
     res.status(200).json({ message: "Login successful", token: token, userDetails: userDetails});
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error });
+  }
+});
+
+router.post("/create-token/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { fcmToken } = req.body; 
+
+  if (!fcmToken) {
+    return res.status(400).json({ message: "FCM token is required" });
+  }
+
+  try {
+    const tokenRef = ref(database, `users/${userId}/fcmToken`); 
+    await set(tokenRef, fcmToken); 
+
+    res.status(201).json({ message: "FCM token created successfully", userId });
+  } catch (error) {
+    console.error("Error creating token:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+});
+
+router.put("/update-token/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { fcmToken } = req.body; 
+
+  try {
+    const tokenRef = ref(database, `users/${userId}/fcmToken`); 
+    await set(tokenRef, fcmToken); 
+
+    res.status(200).json({ message: "FCM token updated successfully", userId });
+  } catch (error) {
+    console.error("Error updating token:", error);
+    res.status(500).json({ message: "Internal server error", error });
   }
 });
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { database } from "../db/firebaseConfig.js";
+import { database, admin } from "../db/firebaseConfig.js";
 import { ref, set, get, update } from "firebase/database";
 
 const router = express.Router();
@@ -98,6 +98,18 @@ router.post("/order-on-delivery/:orderId/:userId", async (req, res) => {
   }
 });
 
+async function getUserToken(userId) {
+  const db = getDatabase();
+  const tokenRef = ref(db, `users/${userId}/fcmToken`); 
+  const snapshot = await get(tokenRef);
+
+  if (snapshot.exists()) {
+    return snapshot.val(); 
+  } else {
+    throw new Error("FCM token not found for the user");
+  }
+}
+
 router.post("/order-at-doorstep/:orderId/:userId", async (req, res) => {
   const { orderId, userId } = req.params;
 
@@ -113,6 +125,17 @@ router.post("/order-at-doorstep/:orderId/:userId", async (req, res) => {
       status: "at-doorstep",
       updated_at: getCurrentTimestamp(),
     });
+
+    const userToken = await getUserToken(userId); // Function to retrieve the user's FCM token from your database
+    const message = {
+      notification: {
+        title: "Delivery Update",
+        body: "Your order is now at your doorstep!",
+      },
+      token: userToken,
+    };
+
+    await admin.messaging().send(message);
 
     res.status(201).json({ message: "Order updated successfully", orderId });
   } catch (error) {
