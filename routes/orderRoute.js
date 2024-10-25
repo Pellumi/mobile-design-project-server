@@ -99,8 +99,7 @@ router.post("/order-on-delivery/:orderId/:userId", async (req, res) => {
 });
 
 async function getUserToken(userId) {
-  const db = getDatabase();
-  const tokenRef = ref(db, `users/${userId}/fcmToken`); 
+  const tokenRef = ref(database, `users/${userId}/fcmToken`); 
   const snapshot = await get(tokenRef);
 
   if (snapshot.exists()) {
