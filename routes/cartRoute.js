@@ -183,4 +183,27 @@ router.delete("/remove-saved-item/:userId/:productId", async (req, res) => {
   }
 });
 
+router.get("/get-saved-item/:userId", async (req, res) => {
+  const userId = req.params.userId;
+
+  if (!userId) {
+    return res.status(404).json({ message: "User Id is required" });
+  }
+
+  try {
+    const savedItemRef = ref(database, `users/${userId}/savedItems`);
+    const savedItemSnapshot = await get(savedItemRef);
+
+    if(!savedItemSnapshot.exists()){
+      return res.status(400).json({message : "No items saved by this user"})
+    }
+
+    const savedItems = savedItemSnapshot.val();
+    res.status(200).json({savedItems});
+  } catch (error) {
+    res.status(500).json({ message: "Error getting saved items: ", error });
+    console.log(error)
+  }
+});
+
 export default router;
