@@ -99,11 +99,11 @@ router.post("/order-on-delivery/:orderId/:userId", async (req, res) => {
 });
 
 async function getUserToken(userId) {
-  const tokenRef = ref(database, `users/${userId}/fcmToken`); 
+  const tokenRef = ref(database, `users/${userId}/fcmToken`);
   const snapshot = await get(tokenRef);
 
   if (snapshot.exists()) {
-    return snapshot.val(); 
+    return snapshot.val();
   } else {
     throw new Error("FCM token not found for the user");
   }
@@ -224,12 +224,10 @@ router.get("/get-order-details/:orderId/:userId", async (req, res) => {
 
     const orderDetails = snapshot.val();
 
-    res
-      .status(200)
-      .json({
-        message: "Order details retrieval successful",
-        orderDetails: orderDetails,
-      });
+    res.status(200).json({
+      message: "Order details retrieval successful",
+      orderDetails: orderDetails,
+    });
   } catch (error) {}
 });
 
