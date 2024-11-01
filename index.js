@@ -3,8 +3,7 @@ import productRoute from "./routes/productRoute.js";
 import userRoute from "./routes/userRoute.js";
 import cartRoute from "./routes/cartRoute.js";
 import orderRoute from "./routes/orderRoute.js";
-
-const cors = require("cors");
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
