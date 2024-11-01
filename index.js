@@ -4,8 +4,16 @@ import userRoute from "./routes/userRoute.js";
 import cartRoute from "./routes/cartRoute.js";
 import orderRoute from "./routes/orderRoute.js";
 
+const cors = require("cors");
+
 const app = express();
 app.use(express.json());
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true, 
+}));
 
 app.use("/api/products", productRoute);
 app.use("/api/users", userRoute);
