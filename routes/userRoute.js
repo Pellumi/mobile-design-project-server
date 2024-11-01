@@ -189,8 +189,8 @@ router.post("/password-recovery/:userId", async (req, res) => {
       to: email,
       subject: "Password Recovery",
       text: `You are receiving this email because you (or someone else) requested a password reset. 
-               Click the link to reset your password: 
-               ${token}`,
+                   Click the link to reset your password: 
+                   https://babrite-reset-password.netlify.app?token=${token}&userId=${userId}`,
     };
 
     transporter.sendMail(mailOptions, (error) => {
@@ -217,7 +217,7 @@ router.post("/reset-password", async (req, res) => {
   if (!token || !newPassword) {
     return res
       .status(400)
-      .json({ message: "token and newPassword are required" });
+      .json({ message: "token and new password are required" });
   }
 
   try {

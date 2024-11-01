@@ -8,11 +8,16 @@ import cors from "cors";
 const app = express();
 app.use(express.json());
 
-app.use(cors({
-  origin: "http://localhost:5173",
-  methods: "GET,POST,PUT,DELETE",
-  credentials: true, 
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://babrite-reset-password.netlify.app",
+    ],
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
 
 app.use("/api/products", productRoute);
 app.use("/api/users", userRoute);
