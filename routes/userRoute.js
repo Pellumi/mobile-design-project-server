@@ -169,7 +169,7 @@ router.post("/password-recovery/:userId", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const token = crypto.randomBytes(20).toString("hex");
+    const token = Math.floor(100000 + Math.random() * 900000);
     const tokenRef = ref(database, `users/${userId}`);
 
     await set(tokenRef, {
@@ -188,9 +188,22 @@ router.post("/password-recovery/:userId", async (req, res) => {
     const mailOptions = {
       to: email,
       subject: "Password Recovery",
-      text: `You are receiving this email because you (or someone else) requested a password reset. 
-                   Click the link to reset your password: 
-                   https://babrite-reset-password.netlify.app/reset-password?token=${token}&userId=${userId}`,
+      html: `
+      <div style="font-family: Arial, sans-serif; text-align: left;">
+      <h1 style="color: #4CAF50; font-size: 24px;">Babcock Superstore Account</h1>
+      <p style="font-size: 16px;">Your password recovery code is:</p>
+      <p style="font-size: 24px; font-weight: bold; color: #333;">${token}</p>
+      <p style="font-size: 14px; color: #555; margin-bottom: 10px;">
+        Please use this code to reset your password. If you did not request a password reset, please ignore this email.
+      </p>
+      <p style="font-size: 14px; color: #555;">
+        Thanks,
+      </p>
+      <p style="font-size: 14px; color: #555;">
+        The Babcock Superstore account team
+      </p>
+    </div>
+      `,
     };
 
     transporter.sendMail(mailOptions, (error) => {
@@ -206,9 +219,9 @@ router.post("/password-recovery/:userId", async (req, res) => {
   }
 });
 
-router.post("/reset-password", async (req, res) => {
-  const { userId, token } = req.query;
-  const { newPassword } = req.body;
+router.post("/reset-password/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  const { token, newPassword } = req.body;
 
   if (!userId) {
     return res.status(400).json({ message: "User Id is required" });
@@ -240,11 +253,9 @@ router.post("/reset-password", async (req, res) => {
     );
 
     if (passwordMatch) {
-      return res
-        .status(401)
-        .json({
-          message: "New password cannot be the same as the previous password",
-        });
+      return res.status(401).json({
+        message: "New password cannot be the same as the previous password",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
